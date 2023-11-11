@@ -1,27 +1,20 @@
+# client.py
+import os
 import socket
-import sys
-
-ip = "localhost"
-port = 9999
-
-# создаём сокет для подключения
-sock = socket.socket()
-sock.connect((ip,port))
-
-# запрашиваем имя файла и отправляем серверу
-f_name = 'test'
-sock.send((bytes(f_name, encoding = 'UTF-8')))
-
-# открываем файл в режиме байтового чтения
-f = open (f_name, "rb")
-
-# читаем строку
-l = f.read(1024)
-
-while (l):
-    # отправляем строку на сервер
-    sock.send(l)
-    l = f.read(1024)
-
-f.close()
-sock.close()
+import struct
+def send_file(sck: socket.socket, filename):
+    # Получение размера файла.
+    filesize = os.path.getsize(filename)
+    # В первую очередь сообщим серверу, 
+    # сколько байт будет отправлено.
+    sck.sendall(struct.pack("<Q", filesize))
+    # Отправка файла блоками по 1024 байта.
+    with open(filename, "rb") as f:
+        while read_bytes := f.read(1024):
+            sck.sendall(read_bytes)
+with socket.create_connection(("localhost", 8080)) as conn:
+    print("Подключение к серверу.")
+    print("Передача файла...")
+    send_file(conn, "test.png")
+    print("Отправлено.")
+print("Соединение закрыто.")
